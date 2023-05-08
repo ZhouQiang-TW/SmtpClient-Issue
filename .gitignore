@@ -1,0 +1,29 @@
+.idea
+.vs
+tmp
+*DotSettings*
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+bin/
+Bin/
+obj/
+Obj/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+.npmrc
+
+# dependencies
+/node_modules

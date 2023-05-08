@@ -1,0 +1,49 @@
+﻿using System.Diagnostics;
+using ConsoleApp1;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Extensions.Logging;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
+
+var logger = LogManager.GetCurrentClassLogger();
+
+var config = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .Build();
+
+await using var servicesProvider = new ServiceCollection()
+    .AddSingleton(config)
+    .AddSingleton<Runner>()
+    .AddLogging(loggingBuilder =>
+    {
+        loggingBuilder.ClearProviders();
+        loggingBuilder.SetMinimumLevel(LogLevel.Trace);
+        loggingBuilder.AddNLog(config);
+    }).BuildServiceProvider();
+try
+{
+    var interval = Debugger.IsAttached ? 2: int.Parse(config.GetSection("Interval").Value);
+    var timer = new PeriodicTimer(TimeSpan.FromSeconds(interval));
+    
+    var runner = servicesProvider.GetRequiredService<Runner>();
+
+    while (await timer.WaitForNextTickAsync())
+    {
+        runner.DoAction();
+    }
+
+    Console.WriteLine("Press ANY key to exit");
+    Console.ReadKey();
+}
+catch (Exception ex)
+{
+    logger.Error(ex, "Stopped program because of exception");
+    throw;
+}
+finally
+{
+    LogManager.Shutdown();
+}
