@@ -25,16 +25,13 @@ await using var servicesProvider = new ServiceCollection()
     }).BuildServiceProvider();
 try
 {
-    var interval = Debugger.IsAttached ? 2: int.Parse(config.GetSection("Interval").Value);
-    var timer = new PeriodicTimer(TimeSpan.FromSeconds(interval));
-    
     var runner = servicesProvider.GetRequiredService<Runner>();
 
-    while (await timer.WaitForNextTickAsync())
-    {
-        runner.DoAction();
-    }
-
+    var interval = Debugger.IsAttached ? 2 : int.Parse(config.GetSection("Interval").Value);
+    var timer = new System.Timers.Timer();
+    timer.Enabled = true;
+    timer.Interval = TimeSpan.FromSeconds(interval).TotalMilliseconds;
+    timer.Elapsed += (sender, e) => runner.DoAction();
     Console.WriteLine("Press ANY key to exit");
     Console.ReadKey();
 }

@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Mail;
+using System.Reflection;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -22,12 +24,16 @@ public class Runner
 
     public void DoAction()
     {
+        var targetFrameworkAttribute = Assembly.GetExecutingAssembly()
+            .GetCustomAttributes<TargetFrameworkAttribute>()
+            .SingleOrDefault();
+        
         try
         {
             _client.Send(
                 "communication@gms.vialto.com",
                 "helloworld@tw.com",
-                $"test now:{DateTime.Now}",
+                $"test now:{DateTime.Now} with {targetFrameworkAttribute?.FrameworkName}",
                 $"<html xmlns='http://www.w3.org/1999/xhtml' >{DateTime.Now}</html>");
             Console.WriteLine($"{DateTime.Now}: send email from {_client.Host}:{_client.Port}");
         }
