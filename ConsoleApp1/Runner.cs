@@ -27,7 +27,9 @@ public class Runner
         var targetFrameworkAttribute = Assembly.GetExecutingAssembly()
             .GetCustomAttributes<TargetFrameworkAttribute>()
             .SingleOrDefault();
-        
+
+        var evtListener = new MyEventListener();
+
         try
         {
             _client.Send(
@@ -51,6 +53,10 @@ public class Runner
             }
 
             throw;
+        }
+        finally
+        {
+            evtListener.Dispose();
         }
     }
 }

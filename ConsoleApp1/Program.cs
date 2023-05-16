@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using ConsoleApp1;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +15,7 @@ var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .Build();
 
-await using var servicesProvider = new ServiceCollection()
+var servicesProvider = new ServiceCollection()
     .AddSingleton(config)
     .AddSingleton<Runner>()
     .AddLogging(loggingBuilder =>
@@ -22,10 +23,11 @@ await using var servicesProvider = new ServiceCollection()
         loggingBuilder.ClearProviders();
         loggingBuilder.SetMinimumLevel(LogLevel.Trace);
         loggingBuilder.AddNLog(config);
-    }).BuildServiceProvider();
+    });
+
 try
 {
-    var runner = servicesProvider.GetRequiredService<Runner>();
+    var runner = servicesProvider.BuildServiceProvider().GetRequiredService<Runner>();
 
     var interval = Debugger.IsAttached ? 2 : int.Parse(config.GetSection("Interval").Value);
     var timer = new System.Timers.Timer();
