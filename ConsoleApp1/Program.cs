@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
 using ConsoleApp1;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +15,9 @@ var config = new ConfigurationBuilder()
     .Build();
 
 var servicesProvider = new ServiceCollection()
-    .AddSingleton(config)
-    .AddSingleton<Runner>()
+    .AddSingleton<IConfiguration>(config)
+    .AddSingleton<IRunner, RunnerV1>()
+    // .AddSingleton<IRunner, RunnerV2>()
     .AddLogging(loggingBuilder =>
     {
         loggingBuilder.ClearProviders();
@@ -27,7 +27,7 @@ var servicesProvider = new ServiceCollection()
 
 try
 {
-    var runner = servicesProvider.BuildServiceProvider().GetRequiredService<Runner>();
+    var runner = servicesProvider.BuildServiceProvider().GetRequiredService<IRunner>();
 
     var interval = Debugger.IsAttached ? 2 : int.Parse(config.GetSection("Interval").Value);
     var timer = new System.Timers.Timer();
